@@ -1,0 +1,9 @@
+node_modules
+.DS_Store
+node_modules/
+node_modules/xhr2/package.json
+node_modules/mime/src/build.js
+node_modules/mime/package.json
+node_modules/mime/cli.js
+node_modules/.bin/mime
+.env
