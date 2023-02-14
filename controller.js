@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { raw } = require("express");
 require('dotenv').config({
   path: `./.env`
 });
@@ -43,13 +44,15 @@ exports.getPostsForAllProfiles = async (req, res) => {
   Promise.all(promises)
     .then(async () => {
 
+      // console.log("HERE", rawPosts, profileNamesShort)
       rawPosts.forEach(rawPost => {
-        let j = 0;
         for (let i = 0; i < rawPost.length; i++) {
-          rawPost[i].profile_short_name = profileNamesShort[j];
+          profileNamesShort.forEach(name => {
+            if (rawPost[i].permalink.includes(name)) rawPost[i].profile_short_name = name;
+          })
         }
-        j++;
       })
+      console.log(rawPosts)
       posts = rawPosts.flat();
 
       posts.sort(function (a, b) {
@@ -60,9 +63,10 @@ exports.getPostsForAllProfiles = async (req, res) => {
         posts[i].pictureBlob = await utils.getImgGrayscale(posts[i].picture)
       }
       // let x = await utils.getImgGrayscale("https://media.wired.com/photos/5b899992404e112d2df1e94e/master/pass/trash2-01.jpg")
-      res.status(200).send(posts);
-    }).catch(err => {
-      res.status(500).send({status: "error", message: err})
+      if (posts.length == 0) return res.status(200).send([])
+      return res.status(200).send(posts);
+     }).catch(err => {
+      return res.status(500).send({status: "error", message: err})
     })
 
 }
