@@ -40,27 +40,30 @@ exports.getPostsForAllProfiles = async (req, res) => {
       })
     )
   }
-  Promise.all(promises).then(async () => {
+  Promise.all(promises)
+    .then(async () => {
 
-    rawPosts.forEach(rawPost => {
-      let j = 0;
-      for (let i = 0; i < rawPost.length; i++) {
-        rawPost[i].profile_short_name = profileNamesShort[j];
+      rawPosts.forEach(rawPost => {
+        let j = 0;
+        for (let i = 0; i < rawPost.length; i++) {
+          rawPost[i].profile_short_name = profileNamesShort[j];
+        }
+        j++;
+      })
+      posts = rawPosts.flat();
+
+      posts.sort(function (a, b) {
+        return new Date(b.date) - new Date(a.date);
+      }).splice(10, posts.length);
+
+      for (let i = 0; i < posts.length; i++) {
+        posts[i].pictureBlob = await utils.getImgGrayscale(posts[i].picture)
       }
-      j++;
+      // let x = await utils.getImgGrayscale("https://media.wired.com/photos/5b899992404e112d2df1e94e/master/pass/trash2-01.jpg")
+      res.status(200).send(posts);
+    }).catch(err => {
+      res.status(500).send({status: "error", message: err})
     })
-    posts = rawPosts.flat();
-
-    posts.sort(function (a, b) {
-      return new Date(b.date) - new Date(a.date);
-    }).splice(10, posts.length);
-
-    for (let i = 0; i < posts.length; i++) {
-      posts[i].pictureBlob = await utils.getImgGrayscale(posts[i].picture)
-    }
-    // let x = await utils.getImgGrayscale("https://media.wired.com/photos/5b899992404e112d2df1e94e/master/pass/trash2-01.jpg")
-    res.status(200).send(posts);
-  });
 
 }
 
