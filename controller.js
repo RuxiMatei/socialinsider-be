@@ -11,7 +11,6 @@ const apiKey = process.env.API_KEY;
 
 exports.getPostsForAllProfiles = async (req, res) => {
   let profiles = req.body.profiles;
-  console.log(profiles)
   let profileNames = [];
   var profileNamesShort = [];
   let profileIds = [];
@@ -20,9 +19,9 @@ exports.getPostsForAllProfiles = async (req, res) => {
   let end = req.body.end;
 
   let rawPosts = [];
-  let posts = [];
-
   let promises = [];
+
+  let posts = [];
 
   profiles.forEach(profile => {
     profileNames.push(profile.profile_type);
@@ -43,8 +42,6 @@ exports.getPostsForAllProfiles = async (req, res) => {
   }
   Promise.all(promises)
     .then(async () => {
-
-      // console.log("HERE", rawPosts, profileNamesShort)
       rawPosts.forEach(rawPost => {
         for (let i = 0; i < rawPost.length; i++) {
           profileNamesShort.forEach(name => {
@@ -52,7 +49,7 @@ exports.getPostsForAllProfiles = async (req, res) => {
           })
         }
       })
-      console.log(rawPosts)
+      
       posts = rawPosts.flat();
 
       posts.sort(function (a, b) {
@@ -61,12 +58,16 @@ exports.getPostsForAllProfiles = async (req, res) => {
 
       for (let i = 0; i < posts.length; i++) {
         posts[i].pictureBlob = await utils.getImgGrayscale(posts[i].picture)
+        // console.log(posts[i].pictureBlob)
+
       }
       // let x = await utils.getImgGrayscale("https://media.wired.com/photos/5b899992404e112d2df1e94e/master/pass/trash2-01.jpg")
       if (posts.length == 0) return res.status(200).send([])
       return res.status(200).send(posts);
      }).catch(err => {
-      return res.status(500).send({status: "error", message: err})
+      console.log("HERE2", err)
+      // return res.status(500).send({status: "error", message: err})
+      return res.status(200).send(posts);
     })
 
 }
@@ -125,7 +126,7 @@ exports.getBrands = async (req, res) => {
 
   axios(config)
     .then((response) => {
-      console.log("HERE", response.data)
+      // console.log("HERE", response.data)
       return res.status(200).send({
         status: "data fetched",
         message: response.data
