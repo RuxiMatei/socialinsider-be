@@ -2,7 +2,8 @@ const axios = require("axios");
 require('dotenv').config({
   path: `./.env`
 });
-let utils = require('./utils')
+let utils = require('./utils');
+
 
 const apiUrl = process.env.API_URL;
 const apiKey = process.env.API_KEY;
@@ -32,9 +33,6 @@ exports.getPostsForAllProfiles = async (req, res) => {
       start, end, "Europe/London"));
   });
 
-  console.log(profiles);
-
-
   for (i = 0; i < profiles.length; i++) {
     promises.push(
       axios(profileConfigs[i]).then((response) => {
@@ -42,7 +40,8 @@ exports.getPostsForAllProfiles = async (req, res) => {
       })
     )
   }
-  Promise.all(promises).then(() => {
+  Promise.all(promises).then(async () => {
+
     rawPosts.forEach(rawPost => {
       let j = 0;
       for (let i = 0; i < rawPost.length; i++) {
@@ -51,9 +50,15 @@ exports.getPostsForAllProfiles = async (req, res) => {
       j++;
     })
     posts = rawPosts.flat();
-    posts.sort(function(a,b){
+
+    posts.sort(function (a, b) {
       return new Date(b.date) - new Date(a.date);
-     }).splice(10, posts.length);
+    }).splice(10, posts.length);
+
+    for (let i = 0; i < posts.length; i++) {
+      posts[i].pictureBlob = await utils.getImgGrayscale(posts[i].picture)
+    }
+    // let x = await utils.getImgGrayscale("https://media.wired.com/photos/5b899992404e112d2df1e94e/master/pass/trash2-01.jpg")
     res.status(200).send(posts);
   });
 
@@ -89,65 +94,6 @@ exports.getConfig = (id, profile_type, start, end, timezone) => {
 
   return config;
 }
-
-exports.getPosts = async (req, res) => {
-  var data = JSON.stringify({
-    "jsonrpc": "2.0",
-    "id": 0,
-    "method": "socialinsider_api.get_posts",
-    "params": {
-      "id": req.body.id,
-      "profile_type": req.body.profile_type,
-      "date": {
-        "start": req.body.start,
-        "end": req.body.end,
-        "timezone": req.body.timezone
-      },
-      "from": 0,
-      "size": 10
-    }
-  });
-
-  var config = {
-    method: 'post',
-    url: apiUrl,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    data: data
-  };
-
-  axios(config)
-    .then((response) => {
-      // let res = response.data.resp;
-      // console.log(res)
-      // let posts = response.data.resp.posts;
-      // let images = [];
-      // posts.forEach(post => {
-      //   let image = document.createElement('img');
-      //   image.src = post.picture;
-      //   let grayscaleImage = utils.imageGrayscale(image);
-
-      //   images.push(grayscaleImage);
-      //   post.picture = grayscaleImage;
-      // });
-      // console.log(images)
-      return res.status(200).send({
-        status: "data fetched",
-        message: response.data
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-      return res.status(500).send({
-        status: "error",
-        message: error.message
-      });
-    });
-
-}
-
 
 exports.getBrands = async (req, res) => {
 
