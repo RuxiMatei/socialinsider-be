@@ -57,9 +57,11 @@ exports.getPostsForAllProfiles = async (req, res) => {
       }).splice(10, posts.length);
 
       for (let i = 0; i < posts.length; i++) {
-        posts[i].pictureBlob = await utils.getImgGrayscale(posts[i].picture)
-        // console.log(posts[i].pictureBlob)
-
+        if (posts[i].picture === undefined) {
+          posts[i].pictureBlob = await utils.getReplacement();
+        } else {
+          posts[i].pictureBlob = await utils.getImgGrayscale(posts[i].picture)
+        }      
       }
       // let x = await utils.getImgGrayscale("https://media.wired.com/photos/5b899992404e112d2df1e94e/master/pass/trash2-01.jpg")
       if (posts.length == 0) return res.status(200).send([])

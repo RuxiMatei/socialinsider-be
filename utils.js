@@ -11,10 +11,8 @@ exports.getReplacement = async () => {
     })
 }
 exports.getImgGrayscale = async (imageUrl) => {
-    let inn;
     const input = (await axios({ url: imageUrl, responseType: "arraybuffer" })
         .then(response => { 
-            // console.log(response.data)
             return response.data 
         })
         .catch(async error => {
